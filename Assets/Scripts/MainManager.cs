@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static StartScreenManager;
 
 public class MainManager : MonoBehaviour
 {
@@ -10,21 +12,29 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
+    public Text ScoreText, bestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
+    private int bestScore;
+    private string bestScorePlayer;
     
     private bool m_GameOver = false;
+    private string playName;
 
     
     // Start is called before the first frame update
     void Start()
     {
+        
+        bestScore = DataManager.instance.bestScore;
+        bestScorePlayer = DataManager.instance.bestScorePlayer;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
+
+        playName = DataManager.instance.PlayerName;
+
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
         {
@@ -36,6 +46,9 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        ScoreText.text = $"{playName}'s Score \n{m_Points}";
+        bestScoreText.text = $"Best Score\n{bestScorePlayer} - {bestScore}";
     }
 
     private void Update()
@@ -57,7 +70,7 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -65,12 +78,35 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"{playName}'s Score \n{m_Points}";
+    }
+
+    public void saveBestScore()
+    {
+        ScoreData data = new ScoreData();
+        data.Name = DataManager.instance.bestScorePlayer;
+        data.Score = DataManager.instance.bestScore;
+
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
     }
 
     public void GameOver()
     {
+        
+        if (m_Points > bestScore)
+        {
+            
+            bestScore = m_Points;
+            bestScorePlayer = playName;
+            bestScoreText.text = $"Best Score\n{bestScorePlayer} - {bestScore}";
+            DataManager.instance.bestScore = m_Points;
+            DataManager.instance.bestScorePlayer = playName;
+            saveBestScore();
+            
+        }
         m_GameOver = true;
         GameOverText.SetActive(true);
+
     }
 }
