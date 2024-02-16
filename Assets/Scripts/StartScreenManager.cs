@@ -40,7 +40,7 @@ public class StartScreenManager : MonoBehaviour
 #if UNITY_EDITOR
         EditorApplication.ExitPlaymode();
 #else
-        Application.Quit()
+        Application.Quit();
         #endif
     }
 
@@ -68,6 +68,7 @@ public class StartScreenManager : MonoBehaviour
     public void loadBestScore()
     {
         string dataFilePath = Application.persistentDataPath + "/savefile.json";
+        Debug.Log("Loading " + dataFilePath);
         if (File.Exists(dataFilePath)) 
         {
             string json = File.ReadAllText(dataFilePath);
