@@ -1,7 +1,8 @@
-#if UNITY_EDITOR
 
 using System.IO;
 using TMPro;
+#if UNITY_EDITOR
+
 using UnityEditor;
 #endif
 
